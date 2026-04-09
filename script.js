@@ -1,6 +1,16 @@
+// 🔥 FIREBASE IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, setDoc, doc, getDocs, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+import {
+    getFirestore,
+    setDoc,
+    doc,
+    collection,
+    deleteDoc,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// 🔥 FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_DOMAIN",
@@ -13,63 +23,57 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// 📦 GLOBAL VARIABLES
 const layout = document.getElementById("layout");
 let selectedSeat = null;
-let assignments = JSON.parse(localStorage.getItem("seats")) || {};
+let assignments = {};
 
-// Seat configuration (your layout)
+// 🪑 SEAT CONFIG
 const rows = [
     12,12,12,12,12,12,12,12,12,12,
     12,12,12,12,12,
     11,10,9,8
 ];
 
-// CREATE LAYOUT
-rows.forEach((seats, rowIndex) => {
+// 🎨 RENDER FULL LAYOUT
+function renderSeats() {
 
-    const row = document.createElement("div");
-    row.className = "row";
+    layout.innerHTML = ""; // IMPORTANT: clear old UI
 
-    const left = document.createElement("div");
-    left.className = "block";
+    rows.forEach((seats, rowIndex) => {
 
-    const aisle = document.createElement("div");
-    aisle.className = "aisle";
+        const row = document.createElement("div");
+        row.className = "row";
 
-    const right = document.createElement("div");
-    right.className = "block";
+        const left = document.createElement("div");
+        left.className = "block";
 
-    for (let i = 1; i <= seats; i++) {
+        const aisle = document.createElement("div");
+        aisle.className = "aisle";
 
-        // LEFT SIDE (Opposition)
-        const seatL = createSeat(`L-${rowIndex+1}-${i}`, rowIndex, i, "left");
-        left.appendChild(seatL);
+        const right = document.createElement("div");
+        right.className = "block";
 
-        // RIGHT SIDE (Ruling)
-        const seatR = createSeat(`R-${rowIndex+1}-${i}`, rowIndex, i, "right");
-        right.appendChild(seatR);
-    }
+        for (let i = 1; i <= seats; i++) {
 
-    row.appendChild(left);
-    row.appendChild(aisle);
-    row.appendChild(right);
+            const seatL = createSeat(`L-${rowIndex+1}-${i}`, rowIndex, i, "left");
+            left.appendChild(seatL);
 
-    layout.appendChild(row);
-});
+            const seatR = createSeat(`R-${rowIndex+1}-${i}`, rowIndex, i, "right");
+            right.appendChild(seatR);
+        }
 
-function removeSeat() {
-    if (!selectedSeat) {
-        alert("Select a seat to remove");
-        return;
-    }
+        row.appendChild(left);
+        row.appendChild(aisle);
+        row.appendChild(right);
 
-    delete assignments[selectedSeat];
-
-    localStorage.setItem("seats", JSON.stringify(assignments));
-
-    location.reload();
+        layout.appendChild(row);
+    });
 }
+
+// 🎯 CREATE INDIVIDUAL SEAT
 function createSeat(code, row, col, side) {
+
     const seat = document.createElement("div");
     seat.className = "seat";
     seat.innerText = code;
@@ -80,12 +84,12 @@ function createSeat(code, row, col, side) {
         return seat;
     }
 
-    // Alternate seating rule
+    // Alternate seating (gap rule)
     if (col % 2 === 0) {
         seat.style.visibility = "hidden";
     }
 
-    // Restore saved data
+    // Restore Firebase data
     if (assignments[code]) {
         seat.classList.add(assignments[code].category.toLowerCase());
     }
@@ -95,7 +99,9 @@ function createSeat(code, row, col, side) {
     return seat;
 }
 
+// 🟡 SELECT SEAT
 function selectSeat(seat, code) {
+
     if (seat.style.visibility === "hidden") return;
 
     document.querySelectorAll(".seat").forEach(s => s.classList.remove("selected"));
@@ -106,7 +112,9 @@ function selectSeat(seat, code) {
     document.getElementById("seatCode").value = code;
 }
 
-function assignSeat() {
+// ✅ ASSIGN SEAT (FIREBASE)
+async function assignSeat() {
+
     const name = document.getElementById("name").value;
     const category = document.getElementById("category").value;
 
@@ -115,30 +123,50 @@ function assignSeat() {
         return;
     }
 
-    assignments[selectedSeat] = { name, category };
-
-    localStorage.setItem("seats", JSON.stringify(assignments));
-
-    location.reload();
+    await setDoc(doc(db, "seats", selectedSeat), {
+        name,
+        category
+    });
 }
 
-function saveData() {
-    alert("Data Saved!");
+// ❌ REMOVE SEAT (FIREBASE)
+async function removeSeat() {
+
+    if (!selectedSeat) {
+        alert("Select a seat");
+        return;
+    }
+
+    await deleteDoc(doc(db, "seats", selectedSeat));
 }
 
-// TABLE UPDATE
+// 📊 UPDATE TABLE
 function updateTable() {
+
     const tbody = document.querySelector("#table tbody");
     tbody.innerHTML = "";
 
     Object.keys(assignments).forEach(seat => {
+
         const row = `<tr>
             <td>${assignments[seat].name}</td>
             <td>${assignments[seat].category}</td>
             <td>${seat}</td>
         </tr>`;
+
         tbody.innerHTML += row;
     });
 }
 
-updateTable();
+// 🔴 REAL-TIME FIREBASE SYNC
+onSnapshot(collection(db, "seats"), (snapshot) => {
+
+    assignments = {};
+
+    snapshot.forEach((docSnap) => {
+        assignments[docSnap.id] = docSnap.data();
+    });
+
+    renderSeats();
+    updateTable();
+});
