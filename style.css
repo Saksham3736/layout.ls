@@ -1,0 +1,92 @@
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #f4f4f4;
+}
+
+.container {
+    display: flex;
+}
+
+/* LAYOUT */
+#layout {
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+}
+
+/* ROW */
+.row {
+    display: flex;
+    justify-content: center;
+    margin: 5px;
+}
+
+/* LEFT & RIGHT BLOCK */
+.block {
+    display: flex;
+}
+
+/* AISLE */
+.aisle {
+    width: 60px;
+}
+
+/* SEATS */
+.seat {
+    width: 40px;
+    height: 40px;
+    margin: 3px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 5px;
+    background: grey;
+}
+
+/* COLORS */
+.ruling {
+    background: red;
+}
+
+.opposition {
+    background: blue;
+}
+
+.individual {
+    background: green;
+}
+
+.selected {
+    border: 3px solid yellow;
+}
+
+/* PANEL */
+.panel {
+    width: 300px;
+    padding: 20px;
+    background: white;
+}
+
+input, select, button {
+    width: 100%;
+    margin: 5px 0;
+    padding: 8px;
+}
+
+table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid black;
+    padding: 5px;
+}
+
+.stage {
+    margin-top: 20px;
+}

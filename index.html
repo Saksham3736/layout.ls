@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auditorium Seating Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Lok Sabha Seating Arrangement</h1>
+
+<div class="container">
+
+    <!-- SEATING LAYOUT -->
+    <div id="layout"></div>
+
+    <!-- SIDE PANEL -->
+    <div class="panel">
+        <h2>Assign Seat</h2>
+
+        <input type="text" id="name" placeholder="Delegate Name">
+
+        <select id="category">
+            <option value="Ruling">Ruling</option>
+            <option value="Opposition">Opposition</option>
+            <option value="Individual">Individual</option>
+        </select>
+
+        <input type="text" id="seatCode" placeholder="Seat Code" readonly>
+
+        <button onclick="assignSeat()">Assign Seat</button>
+        <button onclick="saveData()">Save</button>
+
+        <h2>Seat Table</h2>
+        <table id="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Seat</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</div>
+
+<h2 class="stage">STAGE</h2>
+
+<script src="script.js"></script>
+</body>
+</html>
