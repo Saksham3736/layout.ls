@@ -81,15 +81,26 @@ function createSeat(code, row, col) {
         return seat;
     }
 
-    // Alternate seating
+    // Alternate seating (gap rule)
     if (col % 2 === 0) {
         seat.style.visibility = "hidden";
     }
 
-    // Apply saved data
+    // 🎯 DEFAULT COLORING (VERY IMPORTANT FIX)
+    if (row < 10) {
+        if (code.startsWith("L")) {
+            seat.classList.add("opposition");
+        } else {
+            seat.classList.add("ruling");
+        }
+    } else {
+        seat.classList.add("individual");
+    }
+
+    // 🔥 Override if assigned
     if (assignments[code]) {
-        seat.classList.add(assignments[code].category.toLowerCase());
-        seat.title = assignments[code].name; // hover name
+        seat.className = "seat " + assignments[code].category.toLowerCase();
+        seat.title = assignments[code].name;
     }
 
     seat.onclick = () => selectSeat(seat, code);
