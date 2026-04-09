@@ -90,3 +90,33 @@ td, th {
 .stage {
     margin-top: 20px;
 }
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+
+    .container {
+        flex-direction: column;
+    }
+
+    #layout {
+        overflow-x: auto;
+    }
+
+    .row {
+        flex-wrap: nowrap;
+    }
+
+    .seat {
+        width: 30px;
+        height: 30px;
+        font-size: 8px;
+    }
+
+    .panel {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+}
