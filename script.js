@@ -42,6 +42,18 @@ rows.forEach((seats, rowIndex) => {
     layout.appendChild(row);
 });
 
+function removeSeat() {
+    if (!selectedSeat) {
+        alert("Select a seat to remove");
+        return;
+    }
+
+    delete assignments[selectedSeat];
+
+    localStorage.setItem("seats", JSON.stringify(assignments));
+
+    location.reload();
+}
 function createSeat(code, row, col, side) {
     const seat = document.createElement("div");
     seat.className = "seat";
