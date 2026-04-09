@@ -35,6 +35,24 @@ const rows = [
     11,10,9,8
 ];
 
+window.addEventListener("DOMContentLoaded", () => {
+    init();
+});
+function init() {
+
+    onSnapshot(collection(db, "seats"), (snapshot) => {
+
+        assignments = {};
+
+        snapshot.forEach((docSnap) => {
+            assignments[docSnap.id] = docSnap.data();
+        });
+
+        renderSeats();
+        updateTable();
+    });
+}
+
 // 🎨 RENDER
 function renderSeats() {
 
@@ -119,6 +137,12 @@ function selectSeat(seat, code) {
     selectedSeat = code;
 
     document.getElementById("seatCode").value = code;
+
+    // Autofill if already assigned
+    if (assignments[code]) {
+        document.getElementById("name").value = assignments[code].name;
+        document.getElementById("category").value = assignments[code].category;
+    }
 }
 
 // ✅ ASSIGN
@@ -142,6 +166,7 @@ export async function assignSeat() {
         category
     });
 
+    // Clear input
     document.getElementById("name").value = "";
 }
 
@@ -150,6 +175,11 @@ export async function removeSeat() {
 
     if (!selectedSeat) {
         alert("Select seat");
+        return;
+    }
+
+    if (!assignments[selectedSeat]) {
+        alert("Seat is already empty");
         return;
     }
 
