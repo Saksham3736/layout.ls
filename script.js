@@ -10,14 +10,16 @@ import {
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+
 // 🔥 FIREBASE CONFIG
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_BUCKET",
-  messagingSenderId: "YOUR_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDOThmK9YT2LJHGbzkE_BWcW33znEsWe58",
+  authDomain: "seating-layout.firebaseapp.com",
+  projectId: "seating-layout",
+  storageBucket: "seating-layout.firebasestorage.app",
+  messagingSenderId: "413852662122",
+  appId: "1:413852662122:web:e7d382f8a36d06d10a4d13",
+  measurementId: "G-W71D10F21B"
 };
 
 const app = initializeApp(firebaseConfig);
