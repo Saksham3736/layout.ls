@@ -10,7 +10,6 @@ import {
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-
 // 🔥 FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyDOThmK9YT2LJHGbzkE_BWcW33znEsWe58",
@@ -18,29 +17,28 @@ const firebaseConfig = {
   projectId: "seating-layout",
   storageBucket: "seating-layout.firebasestorage.app",
   messagingSenderId: "413852662122",
-  appId: "1:413852662122:web:e7d382f8a36d06d10a4d13",
-  measurementId: "G-W71D10F21B"
+  appId: "1:413852662122:web:e7d382f8a36d06d10a4d13"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 📦 GLOBAL VARIABLES
+// 📦 GLOBAL
 const layout = document.getElementById("layout");
 let selectedSeat = null;
 let assignments = {};
 
-// 🪑 SEAT CONFIG
+// 🪑 ROW CONFIG
 const rows = [
     12,12,12,12,12,12,12,12,12,12,
     12,12,12,12,12,
     11,10,9,8
 ];
 
-// 🎨 RENDER FULL LAYOUT
+// 🎨 RENDER
 function renderSeats() {
 
-    layout.innerHTML = ""; // IMPORTANT: clear old UI
+    layout.innerHTML = "";
 
     rows.forEach((seats, rowIndex) => {
 
@@ -58,11 +56,8 @@ function renderSeats() {
 
         for (let i = 1; i <= seats; i++) {
 
-            const seatL = createSeat(`L-${rowIndex+1}-${i}`, rowIndex, i, "left");
-            left.appendChild(seatL);
-
-            const seatR = createSeat(`R-${rowIndex+1}-${i}`, rowIndex, i, "right");
-            right.appendChild(seatR);
+            left.appendChild(createSeat(`L-${rowIndex+1}-${i}`, rowIndex, i));
+            right.appendChild(createSeat(`R-${rowIndex+1}-${i}`, rowIndex, i));
         }
 
         row.appendChild(left);
@@ -73,8 +68,8 @@ function renderSeats() {
     });
 }
 
-// 🎯 CREATE INDIVIDUAL SEAT
-function createSeat(code, row, col, side) {
+// 🎯 CREATE SEAT
+function createSeat(code, row, col) {
 
     const seat = document.createElement("div");
     seat.className = "seat";
@@ -86,14 +81,15 @@ function createSeat(code, row, col, side) {
         return seat;
     }
 
-    // Alternate seating (gap rule)
+    // Alternate seating
     if (col % 2 === 0) {
         seat.style.visibility = "hidden";
     }
 
-    // Restore Firebase data
+    // Apply saved data
     if (assignments[code]) {
         seat.classList.add(assignments[code].category.toLowerCase());
+        seat.title = assignments[code].name; // hover name
     }
 
     seat.onclick = () => selectSeat(seat, code);
@@ -101,7 +97,7 @@ function createSeat(code, row, col, side) {
     return seat;
 }
 
-// 🟡 SELECT SEAT
+// 🟡 SELECT
 function selectSeat(seat, code) {
 
     if (seat.style.visibility === "hidden") return;
@@ -114,10 +110,10 @@ function selectSeat(seat, code) {
     document.getElementById("seatCode").value = code;
 }
 
-// ✅ ASSIGN SEAT (FIREBASE)
-async function assignSeat() {
+// ✅ ASSIGN
+export async function assignSeat() {
 
-    const name = document.getElementById("name").value;
+    const name = document.getElementById("name").value.trim();
     const category = document.getElementById("category").value;
 
     if (!selectedSeat || !name) {
@@ -125,24 +121,31 @@ async function assignSeat() {
         return;
     }
 
+    if (assignments[selectedSeat]) {
+        alert("Seat already assigned!");
+        return;
+    }
+
     await setDoc(doc(db, "seats", selectedSeat), {
         name,
         category
     });
+
+    document.getElementById("name").value = "";
 }
 
-// ❌ REMOVE SEAT (FIREBASE)
-async function removeSeat() {
+// ❌ REMOVE
+export async function removeSeat() {
 
     if (!selectedSeat) {
-        alert("Select a seat");
+        alert("Select seat");
         return;
     }
 
     await deleteDoc(doc(db, "seats", selectedSeat));
 }
 
-// 📊 UPDATE TABLE
+// 📊 TABLE
 function updateTable() {
 
     const tbody = document.querySelector("#table tbody");
@@ -150,9 +153,11 @@ function updateTable() {
 
     Object.keys(assignments).forEach(seat => {
 
+        const data = assignments[seat];
+
         const row = `<tr>
-            <td>${assignments[seat].name}</td>
-            <td>${assignments[seat].category}</td>
+            <td>${data.name}</td>
+            <td>${data.category}</td>
             <td>${seat}</td>
         </tr>`;
 
@@ -160,7 +165,7 @@ function updateTable() {
     });
 }
 
-// 🔴 REAL-TIME FIREBASE SYNC
+// 🔴 REAL-TIME SYNC
 onSnapshot(collection(db, "seats"), (snapshot) => {
 
     assignments = {};
