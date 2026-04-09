@@ -35,11 +35,8 @@ const rows = [
     11,10,9,8
 ];
 
+// 🚀 INIT (only ONE Firebase listener)
 window.addEventListener("DOMContentLoaded", () => {
-    init();
-});
-function init() {
-
     onSnapshot(collection(db, "seats"), (snapshot) => {
 
         assignments = {};
@@ -51,14 +48,18 @@ function init() {
         renderSeats();
         updateTable();
     });
-}
+});
 
-// 🎨 RENDER
+// 🎨 RENDER FULL LAYOUT
 function renderSeats() {
 
     layout.innerHTML = "";
 
+    const totalRows = rows.length;
+
     rows.forEach((seats, rowIndex) => {
+
+        const displayRow = totalRows - rowIndex; // 🔥 FIXED ROW NUMBERING
 
         const row = document.createElement("div");
         row.className = "row";
@@ -74,11 +75,8 @@ function renderSeats() {
 
         for (let i = 1; i <= seats; i++) {
 
-            const totalRows = rows.length;
-            const displayRow = totalRows - rowIndex;
-
-            left.appendChild(createSeat(`L-${displayRow}-${i}`, rowIndex, i));
-            right.appendChild(createSeat(`R-${displayRow}-${i}`, rowIndex, i));
+            left.appendChild(createSeat(`L-${displayRow}-${i}`, displayRow, i));
+            right.appendChild(createSeat(`R-${displayRow}-${i}`, displayRow, i));
         }
 
         row.appendChild(left);
@@ -90,31 +88,33 @@ function renderSeats() {
 }
 
 // 🎯 CREATE SEAT
-function createSeat(code, row, col) {
+function createSeat(code, displayRow, col) {
 
     const seat = document.createElement("div");
     seat.className = "seat";
     seat.innerText = code;
 
-    // First row empty
-    if (row === rows.length - 1) {
+    // 🎯 First row (near stage) EMPTY
+    if (displayRow === 1) {
         seat.style.background = "#ddd";
         return seat;
     }
 
-    // Alternate seating (gap rule)
+    // 🎯 Alternate seating (gap rule)
     if (col % 2 === 0) {
         seat.style.visibility = "hidden";
     }
 
-    // 🎯 DEFAULT COLORING (VERY IMPORTANT FIX)
-    if (row < 10) {
+    // 🎯 SECTION LOGIC (CORRECTED)
+    if (displayRow <= 10) {
+        // FRONT (Ruling + Opposition)
         if (code.startsWith("L")) {
-            seat.classList.add("opposition");
+            seat.classList.add("opposition"); // LEFT
         } else {
-            seat.classList.add("ruling");
+            seat.classList.add("ruling"); // RIGHT
         }
     } else {
+        // BACK (Individual)
         seat.classList.add("individual");
     }
 
@@ -129,7 +129,7 @@ function createSeat(code, row, col) {
     return seat;
 }
 
-// 🟡 SELECT
+// 🟡 SELECT SEAT
 function selectSeat(seat, code) {
 
     if (seat.style.visibility === "hidden") return;
@@ -145,10 +145,12 @@ function selectSeat(seat, code) {
     if (assignments[code]) {
         document.getElementById("name").value = assignments[code].name;
         document.getElementById("category").value = assignments[code].category;
+    } else {
+        document.getElementById("name").value = "";
     }
 }
 
-// ✅ ASSIGN
+// ✅ ASSIGN SEAT
 export async function assignSeat() {
 
     const name = document.getElementById("name").value.trim();
@@ -169,15 +171,14 @@ export async function assignSeat() {
         category
     });
 
-    // Clear input
     document.getElementById("name").value = "";
 }
 
-// ❌ REMOVE
+// ❌ REMOVE SEAT
 export async function removeSeat() {
 
     if (!selectedSeat) {
-        alert("Select seat");
+        alert("Select a seat");
         return;
     }
 
@@ -189,7 +190,7 @@ export async function removeSeat() {
     await deleteDoc(doc(db, "seats", selectedSeat));
 }
 
-// 📊 TABLE
+// 📊 UPDATE TABLE
 function updateTable() {
 
     const tbody = document.querySelector("#table tbody");
@@ -208,16 +209,3 @@ function updateTable() {
         tbody.innerHTML += row;
     });
 }
-
-// 🔴 REAL-TIME SYNC
-onSnapshot(collection(db, "seats"), (snapshot) => {
-
-    assignments = {};
-
-    snapshot.forEach((docSnap) => {
-        assignments[docSnap.id] = docSnap.data();
-    });
-
-    renderSeats();
-    updateTable();
-});
