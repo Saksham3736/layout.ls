@@ -74,8 +74,11 @@ function renderSeats() {
 
         for (let i = 1; i <= seats; i++) {
 
-            left.appendChild(createSeat(`L-${rowIndex+1}-${i}`, rowIndex, i));
-            right.appendChild(createSeat(`R-${rowIndex+1}-${i}`, rowIndex, i));
+            const totalRows = rows.length;
+            const displayRow = totalRows - rowIndex;
+
+            left.appendChild(createSeat(`L-${displayRow}-${i}`, rowIndex, i));
+            right.appendChild(createSeat(`R-${displayRow}-${i}`, rowIndex, i));
         }
 
         row.appendChild(left);
